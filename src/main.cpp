@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 #define BUZZER_GPIO 12  // PWM 0
-#define BUTTON_GPIO 17
+#define BUTTON_GPIO 5
 #define A5_FREQUENCY 880  // A5 in Hz
 #define PWM_DUTY_CYCLE 500000  // 50% duty cycle
 
