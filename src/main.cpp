@@ -32,11 +32,11 @@ int main() {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
-        angle += 0.2;
+        angle += 0.1;
         if (angle > 2 * M_PI) {
             angle = 0;
         }
-        usleep(100000); // 100ms
+        usleep(10000); // 10ms
     }
     gpioTerminate();
     return 0;
