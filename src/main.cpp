@@ -1,4 +1,5 @@
 #include <iostream>
+#include <math.h>
 #include <pigpio.h>
 #include <unistd.h>
 
@@ -20,14 +21,21 @@ int main() {
 
     std::cout << "Press button to buzz!" << std::endl;
 
+    double angle = 0.00;
+
     while (true) {
         if (const int buttonState = gpioRead(BUTTON_GPIO); buttonState == 0) {
-            gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
-            std::cout << "Playing!" << std::endl;
+            double frequency = A5_FREQUENCY - 100 * sin(angle);
+            gpioHardwarePWM(BUZZER_GPIO, frequency, PWM_DUTY_CYCLE);
+            std::cout << "Playing frequency " << frequency << std::endl;
         } else {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
+        angle += 0.02;
+        if (angle > 2 * M_PI) {
+            angle = 0;
+        }
         usleep(100000); // 100ms
     }
     gpioTerminate();
