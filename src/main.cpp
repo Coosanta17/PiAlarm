@@ -30,7 +30,6 @@ int main() {
 
         usleep(100000); // 100ms
     }
-
     gpioTerminate();
     return 0;
 }
