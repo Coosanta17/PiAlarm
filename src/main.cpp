@@ -2,8 +2,10 @@
 #include <pigpio.h>
 #include <unistd.h>
 
-#define BUZZER_GPIO 5
-#define BUTTON_GPIO 18
+#define BUZZER_GPIO 12  // PWM 0
+#define BUTTON_GPIO 17
+#define A5_FREQUENCY 880  // A5 in Hz
+#define PWM_DUTY_CYCLE 500000  // 50% duty cycle
 
 int main() {
     if (gpioInitialise() < 0) {
@@ -11,21 +13,19 @@ int main() {
         return 1;
     }
 
-    // Setup
     gpioSetMode(BUZZER_GPIO, PI_OUTPUT);
+
     gpioSetMode(BUTTON_GPIO, PI_INPUT);
     gpioSetPullUpDown(BUTTON_GPIO, PI_PUD_UP);
 
     std::cout << "Press button to buzz!" << std::endl;
 
     while (true) {
-        int buttonState = gpioRead(BUTTON_GPIO);
-
-        if (buttonState == 0) {
-            gpioWrite(BUZZER_GPIO, 1);
-            std::cout << "Buzzing!" << std::endl;
+        if (const int buttonState = gpioRead(BUTTON_GPIO); buttonState == 0) {
+            gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
+            std::cout << "Playing!" << std::endl;
         } else {
-            gpioWrite(BUZZER_GPIO, 0);
+            gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
         usleep(100000); // 100ms
