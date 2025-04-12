@@ -32,7 +32,7 @@ int main() {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
-        angle += 0.02;
+        angle += 0.2;
         if (angle > 2 * M_PI) {
             angle = 0;
         }
