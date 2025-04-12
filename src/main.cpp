@@ -22,25 +22,22 @@ int main() {
     std::cout << "Press button to buzz!" << std::endl;
 
     double angle = 0.00;
-    int previousButtonState = 1;
-    int buttonState = gpioRead(BUTTON_GPIO);
 
     while (true) {
-        if (buttonState == 0) {
+        if (const int buttonState = gpioRead(BUTTON_GPIO); buttonState == 0) {
             double frequency = A5_FREQUENCY - 100 * sin(angle);
             gpioHardwarePWM(BUZZER_GPIO, frequency, PWM_DUTY_CYCLE);
             std::cout << "Playing frequency " << frequency << std::endl;
 
-            angle += 0.2;
+            angle += 0.1;
             if (angle > 2 * M_PI) {
                 angle = 0;
             }
-        } else if (previousButtonState == 0) {
+        } else {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
-        previousButtonState = buttonState;
-        usleep(25000); // 10ms
+        usleep(10000); // 10ms
     }
     gpioTerminate();
     return 0;
