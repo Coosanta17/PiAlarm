@@ -28,14 +28,15 @@ int main() {
             double frequency = A5_FREQUENCY - 100 * sin(angle);
             gpioHardwarePWM(BUZZER_GPIO, frequency, PWM_DUTY_CYCLE);
             std::cout << "Playing frequency " << frequency << std::endl;
+
+            angle += 0.1;
+            if (angle > 2 * M_PI) {
+                angle = 0;
+            }
         } else {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
-        angle += 0.1;
-        if (angle > 2 * M_PI) {
-            angle = 0;
-        }
         usleep(10000); // 10ms
     }
     gpioTerminate();
