@@ -17,5 +17,5 @@ target_link_libraries(alarm_clock
 #if(WIN32)
 #    include_directories(external)
 #endif()
-
-include_directories(external)
+#
+#include_directories(external)
