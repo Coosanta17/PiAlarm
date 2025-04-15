@@ -48,3 +48,6 @@ CMakeUserPresets.json
 cmake-build-debug
 
 .idea
+
+# Mock libraries for local development (Because windows)
+/external/

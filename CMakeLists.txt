@@ -13,3 +13,9 @@ target_link_libraries(alarm_clock
         pthread
         rt
 )
+
+#if(WIN32)
+#    include_directories(external)
+#endif()
+
+include_directories(external)
