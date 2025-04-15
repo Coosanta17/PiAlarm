@@ -1,5 +1,5 @@
 #include <iostream>
-#include <pigpio>
+#include <pigpio.h>
 #include <unistd.h>
 #include "../include/alarm.h"
 
