@@ -11,7 +11,7 @@
 bool &sound_state = sound;
 int lastButtonState = 1;
 
-[[noreturn]] int main() {
+ int main() {
     if (gpioInitialise() < 0) {
         std::cerr << "pigpio init failed" << std::endl;
         return 1;

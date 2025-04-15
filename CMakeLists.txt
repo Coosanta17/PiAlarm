@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(alarm_clock
         src/main.cpp
+        src/alarm.cpp
 )
 
 target_link_libraries(alarm_clock
@@ -13,6 +14,8 @@ target_link_libraries(alarm_clock
         pthread
         rt
 )
+
+include_directories(include)
 
 #if(WIN32)
 #    include_directories(external)
