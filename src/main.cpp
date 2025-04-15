@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../external/pigpio.h"
+#include <pigpio>
 #include <unistd.h>
 #include "../include/alarm.h"
 
@@ -9,6 +9,7 @@
 #define PWM_DUTY_CYCLE 500000  // 50% duty cycle
 
 bool &sound_state = sound;
+int lastButtonState = 1;
 
 [[noreturn]] int main() {
     if (gpioInitialise() < 0) {
@@ -21,18 +22,25 @@ bool &sound_state = sound;
     gpioSetMode(BUTTON_GPIO, PI_INPUT);
     gpioSetPullUpDown(BUTTON_GPIO, PI_PUD_UP);
 
-    std::cout << "Press button to buzz!" << std::endl;
+    std::cout << "Press button to toggle alarm!" << std::endl;
 
     while (true) {
-        if (const int buttonState = gpioRead(BUTTON_GPIO); buttonState == 0) {
+        const int buttonState = gpioRead(BUTTON_GPIO);
+
+        if (buttonState == 0 && lastButtonState == 1) {
             if (!isRunning()) {
                 startAlarm();
-            } else if (sound_state) {
-                gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
+            } else {
+                stopAlarm();
             }
+        }
+        lastButtonState = buttonState;
 
+        updateAlarm();
+
+        if (sound_state) {
+            gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
         } else {
-            stopAlarm();
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
 
