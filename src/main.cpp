@@ -1,9 +1,10 @@
 #include <iostream>
 #include <pigpio.h>
-#include "../external/pigpio.h" // For development purposes only to remove red text
 #include <unistd.h>
 #include <csignal>
 #include "../include/alarm.h"
+
+#include "../external/pigpio.h" // For development purposes only to remove red text
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
@@ -20,12 +21,12 @@ void signalHandler(const int signum) {
 }
 
 int main() {
-    gpioSetSignalFunc(SIGINT, signalHandler);
-
     if (gpioInitialise() < 0) {
         std::cerr << "pigpio init failed" << std::endl;
         return 1;
     }
+
+    gpioSetSignalFunc(SIGINT, signalHandler);
 
     gpioSetMode(BUZZER_GPIO, PI_OUTPUT);
 
