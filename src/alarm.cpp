@@ -3,8 +3,8 @@
 #include <ctime>
 #include "../include/alarm.h"
 
-constexpr int beatDuration = 300000;   // 300ms at 200 BPM (in microseconds)
-constexpr int gapDuration = 50000;     // 50ms gap between beats (in microseconds)
+constexpr int beatDuration = 150000; // Microseconds
+constexpr int gapDuration = 20000;
 
 bool sound = false;
 bool on = false;
@@ -51,7 +51,7 @@ void updateAlarm() {
         if (elapsed >= gapDuration) {
             beatCount++;
 
-            if (beatCount < 3) {
+            if (beatCount < 4) {
                 patternPosition = 0;
             } else {
                 patternPosition = 2;

@@ -1,17 +1,26 @@
 #include <iostream>
 #include <pigpio.h>
 #include <unistd.h>
+#include <csignal>
 #include "../include/alarm.h"
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
 #define A5_FREQUENCY 880  // A5 in Hz
-#define PWM_DUTY_CYCLE 500000  // 50% duty cycle
+#define PWM_DUTY_CYCLE 300000  // 30% duty cycle
 
 bool &sound_state = sound;
 int lastButtonState = 1;
+volatile bool running = true;
 
- int main() {
+void signalHandler(const int signum) {
+    std::cout << "\nInterrupt signal received." << signum << std::endl;
+    running = false;
+}
+
+int main() {
+    std::signal(SIGINT, signalHandler);
+
     if (gpioInitialise() < 0) {
         std::cerr << "pigpio init failed" << std::endl;
         return 1;
@@ -24,7 +33,7 @@ int lastButtonState = 1;
 
     std::cout << "Press button to toggle alarm!" << std::endl;
 
-    while (true) {
+    while (running) {
         const int buttonState = gpioRead(BUTTON_GPIO);
 
         if (buttonState == 0 && lastButtonState == 1) {
@@ -46,6 +55,13 @@ int lastButtonState = 1;
 
         usleep(10000); // 10ms
     }
+
+    gpioHardwarePWM(BUZZER_GPIO, 0, 0);
+    if (isRunning()) {
+        stopAlarm();
+    }
+
     gpioTerminate();
+    std::cout << "Exiting." << std::endl;
     return 0;
 }
