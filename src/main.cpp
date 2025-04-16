@@ -1,7 +1,8 @@
 #include <iostream>
 #include <pigpio.h>
-// #include "../external/pigpio.h" // For development purposes only to remove red text
+#include "../external/pigpio.h" // For development purposes only to remove red text
 #include <unistd.h>
+#include <csignal>
 #include "../include/alarm.h"
 
 #define BUZZER_GPIO 12  // PWM 0
