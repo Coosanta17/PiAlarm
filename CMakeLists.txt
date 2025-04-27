@@ -1,24 +1,25 @@
 cmake_minimum_required(VERSION 3.20)
-project(PiAlarm)
+project(pi_alarm)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_executable(alarm_clock
+find_package(httplib REQUIRED)
+
+add_executable(pi_alarm
         src/main.cpp
         src/alarm.cpp
+        src/api.cpp
 )
 
-target_link_libraries(alarm_clock
+target_link_libraries(pi_alarm PRIVATE
         pigpio
         pthread
         rt
+        httplib::httplib
 )
 
-include_directories(include)
-
-#if(WIN32)
-#    include_directories(external)
-#endif()
-#
-#include_directories(external)
+target_include_directories(pi_alarm PRIVATE
+        include
+        external
+)
