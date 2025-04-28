@@ -1,5 +1,4 @@
 #include <unistd.h>
-#include <iostream>
 #include <ctime>
 #include "../include/alarm.h"
 

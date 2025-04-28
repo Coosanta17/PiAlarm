@@ -4,8 +4,6 @@
 #include <csignal>
 #include "../include/alarm.h"
 
-#include "../external/pigpio.h" // For development purposes only to remove red text
-
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
 #define A5_FREQUENCY 880  // A5 in Hz
@@ -18,6 +16,14 @@ volatile bool running = true;
 void signalHandler(const int signum) {
     std::cout << "\nInterrupt signal received. (" << signum << ")" << std::endl;
     running = false;
+}
+
+void buttonPressed() {
+    if (!isRunning()) {
+        startAlarm();
+    } else {
+        stopAlarm();
+    }
 }
 
 int main() {
@@ -33,17 +39,16 @@ int main() {
     gpioSetMode(BUTTON_GPIO, PI_INPUT);
     gpioSetPullUpDown(BUTTON_GPIO, PI_PUD_UP);
 
-    std::cout << "Press button to toggle alarm!" << std::endl;
-
     while (running) {
         const int buttonState = gpioRead(BUTTON_GPIO);
 
+        /*
+         * This only detects the iteration where the button was not pressed last iteration (10ms ago) and is pressed now
+         * I forgot what this did, and I'm sure others who may read this code may also be confused a bit, or maybe it is
+         * just me...
+         */
         if (buttonState == 0 && lastButtonState == 1) {
-            if (!isRunning()) {
-                startAlarm();
-            } else {
-                stopAlarm();
-            }
+            buttonPressed();
         }
         lastButtonState = buttonState;
 
