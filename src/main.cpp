@@ -19,11 +19,10 @@ void signalHandler(const int signum) {
 }
 
 void buttonPressed() {
-    if (!isRunning()) {
-        startAlarm();
-    } else {
+    if (isRunning()) {
         stopAlarm();
     }
+    // TODO: `else turn display on`
 }
 
 int main() {

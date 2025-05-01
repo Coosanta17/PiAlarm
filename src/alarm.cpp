@@ -1,5 +1,3 @@
-#include <unistd.h>
-#include <ctime>
 #include "../include/alarm.h"
 
 constexpr int beatDuration = 150000; // Microseconds
