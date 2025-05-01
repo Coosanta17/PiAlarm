@@ -32,8 +32,15 @@ jobs:
         conan profile update settings.os=Linux conan-profile
         conan profile update settings.compiler.libcxx=libstdc++ conan-profile
 
-    - name: Install dependencies with Conan
-      run: conan install . --build=missing
+    - name: Update Python Tools
+      run: |
+        pip3 install --upgrade pip setuptools
+
+    - name: Debug Conan Installation
+      run: conan install . --build=missing --log-level=debug
+
+    # - name: Install dependencies with Conan
+    #   run: conan install . --build=missing
 
     - name: Build with CMake
       run: |
