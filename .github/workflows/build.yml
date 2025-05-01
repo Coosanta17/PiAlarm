@@ -1,0 +1,43 @@
+name: Build for Raspberry Pi Zero 2 W
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake python3 python3-pip git
+        pip3 install conan==2.0.0
+
+    - name: Configure Conan
+      run: conan profile detect
+
+    - name: Configure Conan Profile for Raspberry Pi
+      run: |
+        conan profile update settings.arch=armv8 conan-profile
+        conan profile update settings.os=Linux conan-profile
+        conan profile update settings.compiler.libcxx=libstdc++ conan-profile
+
+    - name: Install dependencies with Conan
+      run: conan install . --build=missing
+
+    - name: Build with CMake
+      run: |
+        cmake -DCMAKE_BUILD_TYPE=Release .
+        cmake --build .
+
+    # TODO: Upload build artefacts (is it even needed?)
