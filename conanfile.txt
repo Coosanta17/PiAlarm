@@ -1,6 +1,0 @@
-[requires]
-cpp-httplib/0.19.0
-
-[generators]
-CMakeDeps
-CMakeToolchain
