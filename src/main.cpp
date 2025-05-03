@@ -1,13 +1,22 @@
+#include <chrono>
 #include <iostream>
 #include <pigpio.h>
 #include <unistd.h>
 #include <csignal>
+#include <thread>
+#include <vector>
 #include "../include/buzzer.h"
+#include "../include/alarm.h"
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
 #define A5_FREQUENCY 880  // A5 in Hz
 #define PWM_DUTY_CYCLE 300000  // 30% duty cycle
+
+std::thread buttonThread;
+std::thread alarmThread;
+
+std::vector<Alarm> alarms;
 
 bool &sound_state = sound;
 int lastButtonState = 1;
@@ -16,28 +25,46 @@ volatile bool running = true;
 void signalHandler(const int signum) {
     std::cout << "\nInterrupt signal received. (" << signum << ")" << std::endl;
     running = false;
+    std::cout << "Exiting." << std::endl;
 }
 
-void buttonPressed() {
-    if (isRunning()) {
-        stopAlarm();
+void waitUntilNextMinute() {
+    using namespace std::chrono;
+    const auto now = system_clock::now();
+    const auto time_t_now = system_clock::to_time_t(now);
+    std::tm *tm_now = std::localtime(&time_t_now);
+
+    tm_now->tm_sec = 0;
+    tm_now->tm_min += 1;
+    const auto target = system_clock::from_time_t(std::mktime(tm_now));
+
+    while (running && system_clock::now() < target) {
+        std::this_thread::sleep_for(milliseconds(200)); // check every 200ms
     }
-    // TODO: `else turn display on`
 }
 
-int main() {
+void initialize() {
     if (gpioInitialise() < 0) {
-        std::cerr << "pigpio init failed" << std::endl;
-        return 1;
+        throw std::runtime_error("PIGPIO initialization failed");
     }
 
+    signal(SIGINT, signalHandler);
     gpioSetSignalFunc(SIGINT, signalHandler);
 
     gpioSetMode(BUZZER_GPIO, PI_OUTPUT);
 
     gpioSetMode(BUTTON_GPIO, PI_INPUT);
     gpioSetPullUpDown(BUTTON_GPIO, PI_PUD_UP);
+}
 
+void buttonPressed() {
+    if (isRunning()) {
+        stopBuzzer();
+    }
+    // TODO: `else turn display on`
+}
+
+void buttonAndBuzzerLoop() {
     while (running) {
         const int buttonState = gpioRead(BUTTON_GPIO);
 
@@ -51,7 +78,7 @@ int main() {
         }
         lastButtonState = buttonState;
 
-        updateAlarm();
+        updateBuzzer();
 
         if (sound_state) {
             gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
@@ -61,13 +88,50 @@ int main() {
 
         usleep(10000); // 10ms
     }
+}
 
-    gpioHardwarePWM(BUZZER_GPIO, 0, 0);
-    if (isRunning()) {
-        stopAlarm();
+void alarmLoop() {
+    while (running) {
+        for (const Alarm &alarm: alarms) {
+            if (alarm.triggerAlarm()) {
+                updateBuzzer();
+            }
+        }
+
+        waitUntilNextMinute();
     }
+}
 
-    gpioTerminate();
-    std::cout << "Exiting." << std::endl;
-    return 0;
+void runLoops() {
+    buttonThread = std::thread(buttonAndBuzzerLoop);
+    alarmThread = std::thread(alarmLoop);
+}
+
+void debugAlarmNotForRelease() {
+    alarms.push_back(Alarm(0, 1, true, {
+                               Sunday, Monday, Tuesday,
+                               Wednesday, Thursday, Friday,
+                               Saturday
+                           }, Sunday));
+}
+
+int main() {
+    try {
+        debugAlarmNotForRelease();
+        initialize();
+        runLoops();
+
+        if (buttonThread.joinable()) buttonThread.join();
+        if (alarmThread.joinable()) alarmThread.join();
+
+        stopBuzzer();
+        gpioHardwarePWM(BUZZER_GPIO, 0, 0);
+        gpioTerminate();
+
+        std::cout << "exited cleanly" << std::endl;
+        return 0;
+    } catch (const std::exception &e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
 }

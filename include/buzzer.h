@@ -6,10 +6,10 @@
 
 extern bool sound;
 
-void startAlarm();
-void stopAlarm();
+void startBuzzer();
+void stopBuzzer();
 bool isRunning();
-void updateAlarm();
+void updateBuzzer();
 unsigned long micros();
 
 #endif //BUZZER_H

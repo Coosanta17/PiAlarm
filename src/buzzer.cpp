@@ -9,14 +9,14 @@ unsigned long lastUpdateTime = 0;
 int patternPosition = 0;
 int beatCount = 0;
 
-void startAlarm() {
+void startBuzzer() {
     on = true;
     patternPosition = 0;
     beatCount = 0;
     lastUpdateTime = micros();
 }
 
-void stopAlarm() {
+void stopBuzzer() {
     on = false;
     sound = false;
 }
@@ -25,7 +25,7 @@ bool isRunning() {
     return on;
 }
 
-void updateAlarm() {
+void updateBuzzer() {
     if (!on) return;
 
     const unsigned long currentTime = micros();

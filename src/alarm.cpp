@@ -1,6 +1,6 @@
 #include "../include/alarm.h"
 
-bool Alarm::shouldRing() const {
+bool Alarm::triggerAlarm() const {
     const time_t timestamp = time(nullptr);
 
     if (tm currentDatetime = *localtime(&timestamp);

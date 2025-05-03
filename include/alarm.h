@@ -82,7 +82,7 @@ public:
     void setLastRunDay(const DayOfWeek state) { lastRunDay = state; }
     [[nodiscard]] std::optional<DayOfWeek> getLastRunDay() const { return lastRunDay; }
 
-    [[nodiscard]] bool shouldRing() const;
+    [[nodiscard]] bool triggerAlarm() const;
 };
 
 #endif //ALARM_H
