@@ -2,7 +2,7 @@
 #include <pigpio.h>
 #include <unistd.h>
 #include <csignal>
-#include "../include/alarm.h"
+#include "../include/buzzer.h"
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5

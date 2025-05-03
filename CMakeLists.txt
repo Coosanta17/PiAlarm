@@ -10,6 +10,7 @@ add_executable(pi_alarm
         src/main.cpp
         src/alarm.cpp
         src/api.cpp
+        src/buzzer.cpp
 )
 
 target_link_libraries(pi_alarm PRIVATE
