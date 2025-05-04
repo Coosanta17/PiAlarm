@@ -39,7 +39,7 @@ void waitUntilNextMinute() {
     const auto target = system_clock::from_time_t(std::mktime(tm_now));
 
     while (running && system_clock::now() < target) {
-        std::this_thread::sleep_for(milliseconds(200)); // check every 200ms
+        std::this_thread::sleep_for(milliseconds(500));
     }
 }
 
@@ -108,11 +108,11 @@ void runLoops() {
 }
 
 void debugAlarmNotForRelease() {
-    alarms.push_back(Alarm(0, 1, true, {
+    alarms.push_back(Alarm(21, 25, true, {
                                Sunday, Monday, Tuesday,
                                Wednesday, Thursday, Friday,
                                Saturday
-                           }, Sunday));
+                           }, Saturday));
 }
 
 int main() {
