@@ -9,7 +9,6 @@ find_package(httplib REQUIRED)
 add_executable(pi_alarm
         src/main.cpp
         src/alarm.cpp
-        src/api.cpp
         src/buzzer.cpp
 )
 

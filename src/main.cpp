@@ -108,7 +108,7 @@ void runLoops() {
 }
 
 void debugAlarmNotForRelease() {
-    alarms.push_back(Alarm(21, 25, true, {
+    alarms.push_back(Alarm(21, 52, true, {
                                Sunday, Monday, Tuesday,
                                Wednesday, Thursday, Friday,
                                Saturday
