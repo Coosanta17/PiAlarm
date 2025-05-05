@@ -31,13 +31,21 @@ public:
     Alarm(const int hour, const int minute) : hour(hour), minute(minute), enabled(true) {
         const time_t timestamp = time(nullptr);
         tm datetime = *localtime(&timestamp);
-        this->days = {static_cast<DayOfWeek>(datetime.tm_wday)};
+        this->days = {static_cast<DayOfWeek>(datetime.tm_wday)}; // Today
     }
 
-    Alarm(const int hour, const int minute, const bool enabled, const std::unordered_set<DayOfWeek> &days,
-          const DayOfWeek lastRunDay) : Alarm(hour, minute) {
-        this->enabled = enabled;
+    Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days) : Alarm(hour, minute) {
         this->days = days;
+        this->enabled = true;
+    }
+
+    Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled)
+        : Alarm(hour, minute, days) {
+        this->enabled = enabled;
+    }
+
+    Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled,
+          const DayOfWeek lastRunDay) : Alarm(hour, minute, days, enabled) {
         this->lastRunDay = lastRunDay;
     }
 

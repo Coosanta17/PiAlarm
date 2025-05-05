@@ -94,6 +94,7 @@ void alarmLoop() {
     while (running) {
         for (const Alarm &alarm: alarms) {
             if (alarm.triggerAlarm()) {
+                std::cout << "Alarm Triggered" << std::endl;
                 updateBuzzer();
             }
         }
@@ -108,11 +109,14 @@ void runLoops() {
 }
 
 void debugAlarmNotForRelease() {
-    alarms.push_back(Alarm(21, 52, true, {
+    alarms.push_back(Alarm(5, 55, {Tuesday, Wednesday, Thursday}));
+    alarms.push_back(Alarm(6, 55, {Monday, Friday}));
+    alarms.push_back(Alarm(4, 55, {Saturday}, false));
+    alarms.push_back(Alarm(21, 50, {
                                Sunday, Monday, Tuesday,
                                Wednesday, Thursday, Friday,
                                Saturday
-                           }, Saturday));
+                           }, true, Saturday));
 }
 
 int main() {
