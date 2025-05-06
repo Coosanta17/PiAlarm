@@ -18,7 +18,6 @@ std::thread alarmThread;
 
 std::vector<Alarm> alarms;
 
-bool &sound_state = sound;
 int lastButtonState = 1;
 volatile bool running = true;
 
@@ -58,6 +57,7 @@ void initialize() {
 }
 
 void buttonPressed() {
+    std::cout << "Button pressed" << std::endl;
     if (isRunning()) {
         stopBuzzer();
     }
@@ -80,7 +80,7 @@ void buttonAndBuzzerLoop() {
 
         updateBuzzer();
 
-        if (sound_state) {
+        if (sound) {
             gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
         } else {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
@@ -94,8 +94,8 @@ void alarmLoop() {
     while (running) {
         for (const Alarm &alarm: alarms) {
             if (alarm.triggerAlarm()) {
-                std::cout << "Alarm Triggered" << std::endl;
-                updateBuzzer();
+                std::cout << "Alarm triggered" << std::endl;
+                startBuzzer();
             }
         }
 
