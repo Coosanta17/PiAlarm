@@ -10,8 +10,11 @@
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
-#define A5_FREQUENCY 880  // A5 in Hz
+#define FREQUENCY 880  // A5 in Hz
 #define PWM_DUTY_CYCLE 300000  // 30% duty cycle
+
+#define SHUTDOWN_ENABLED true
+#define LONG_PRESS_DURATION std::chrono::seconds(7)
 
 std::thread buttonThread;
 std::thread alarmThread;
@@ -19,6 +22,10 @@ std::thread alarmThread;
 std::vector<Alarm> alarms;
 
 int lastButtonState = 1;
+std::chrono::steady_clock::time_point buttonPressStartTime;
+bool isButtonCurrentlyPressed = false;
+bool longPressDetected = false;
+
 volatile bool running = true;
 
 void signalHandler(const int signum) {
@@ -64,6 +71,18 @@ void buttonPressed() {
     // TODO: `else turn display on`
 }
 
+void buttonLongPressed() { // This will have to run in buttonThread
+    if constexpr (!SHUTDOWN_ENABLED) return;
+    std::cout << "Button long-pressed - shutting down" << std::endl;
+
+    gpioHardwarePWM(BUZZER_GPIO, FREQUENCY, PWM_DUTY_CYCLE);
+    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    running = false;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    system("sudo shutdown -h now");
+}
+
 void buttonAndBuzzerLoop() {
     while (running) {
         const int buttonState = gpioRead(BUTTON_GPIO);
@@ -74,14 +93,30 @@ void buttonAndBuzzerLoop() {
          * just me...
          */
         if (buttonState == 0 && lastButtonState == 1) {
+            buttonPressStartTime = std::chrono::steady_clock::now();
+            isButtonCurrentlyPressed = true;
             buttonPressed();
         }
+
+        if (buttonState == 0 && isButtonCurrentlyPressed) {
+            if (auto currentDuration = std::chrono::steady_clock::now() - buttonPressStartTime;
+                currentDuration >= LONG_PRESS_DURATION && !longPressDetected) {
+                longPressDetected = true;
+                buttonLongPressed();
+            }
+        }
+
+        if (buttonState == 1 && lastButtonState == 0) {
+            longPressDetected = false;
+            isButtonCurrentlyPressed = false;
+        }
+
         lastButtonState = buttonState;
 
         updateBuzzer();
 
         if (sound) {
-            gpioHardwarePWM(BUZZER_GPIO, A5_FREQUENCY, PWM_DUTY_CYCLE);
+            gpioHardwarePWM(BUZZER_GPIO, FREQUENCY, PWM_DUTY_CYCLE);
         } else {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
         }
