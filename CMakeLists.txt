@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(httplib REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_executable(pi_alarm
         src/main.cpp
