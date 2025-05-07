@@ -1,14 +1,17 @@
 #include "../include/alarm.h"
 
-bool Alarm::triggerAlarm() const {
+bool Alarm::triggerAlarm() {
     const time_t timestamp = time(nullptr);
+    const tm currentDatetime = *localtime(&timestamp);
 
-    if (tm currentDatetime = *localtime(&timestamp);
+    if (const auto today = static_cast<DayOfWeek>(currentDatetime.tm_wday);
         enabled &&
-        days.contains(static_cast<DayOfWeek>(currentDatetime.tm_wday)) &&
-        (!lastRunDay.has_value() || lastRunDay.value() != static_cast<DayOfWeek>(currentDatetime.tm_wday)) &&
+        days.contains(today) &&
+        (!lastRunDay.has_value() || lastRunDay.value() != today) &&
         currentDatetime.tm_hour == hour &&
         currentDatetime.tm_min == minute) {
+
+        setLastRunDay(today);
         return true;
     }
     return false;

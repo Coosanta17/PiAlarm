@@ -25,26 +25,26 @@ class Alarm {
     std::optional<DayOfWeek> lastRunDay;
 
 public:
-    Alarm() : hour(0), minute(0), enabled(false), days({}), lastRunDay(std::nullopt) {
+    explicit Alarm() : hour(0), minute(0), enabled(false), days({}), lastRunDay(std::nullopt) {
     }
 
-    Alarm(const int hour, const int minute) : hour(hour), minute(minute), enabled(true) {
+    explicit Alarm(const int hour, const int minute) : hour(hour), minute(minute), enabled(true) {
         const time_t timestamp = time(nullptr);
         tm datetime = *localtime(&timestamp);
         this->days = {static_cast<DayOfWeek>(datetime.tm_wday)}; // Today
     }
 
-    Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days) : Alarm(hour, minute) {
+    explicit Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days) : Alarm(hour, minute) {
         this->days = days;
         this->enabled = true;
     }
 
-    Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled)
+    explicit Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled)
         : Alarm(hour, minute, days) {
         this->enabled = enabled;
     }
 
-    Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled,
+    explicit Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled,
           const DayOfWeek lastRunDay) : Alarm(hour, minute, days, enabled) {
         this->lastRunDay = lastRunDay;
     }
@@ -66,7 +66,7 @@ public:
         return day >= 0 && day < 7 && days.contains(static_cast<DayOfWeek>(day));
     }
 
-    [[nodiscard]] const std::unordered_set<DayOfWeek> &getEnabledDays() const {
+    [[nodiscard]] std::unordered_set<DayOfWeek> getEnabledDays() const {
         return days;
     }
 
@@ -90,7 +90,7 @@ public:
     void setLastRunDay(const DayOfWeek state) { lastRunDay = state; }
     [[nodiscard]] std::optional<DayOfWeek> getLastRunDay() const { return lastRunDay; }
 
-    [[nodiscard]] bool triggerAlarm() const;
+    [[nodiscard]] bool triggerAlarm();
 };
 
 #endif //ALARM_H

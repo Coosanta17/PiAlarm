@@ -71,7 +71,8 @@ void buttonPressed() {
     // TODO: `else turn display on`
 }
 
-void buttonLongPressed() { // This will have to run in buttonThread
+void buttonLongPressed() {
+    // This will have to run in buttonThread
     if constexpr (!SHUTDOWN_ENABLED) return;
     std::cout << "Button long-pressed - shutting down" << std::endl;
 
@@ -127,7 +128,7 @@ void buttonAndBuzzerLoop() {
 
 void alarmLoop() {
     while (running) {
-        for (const Alarm &alarm: alarms) {
+        for (Alarm &alarm: alarms) {
             if (alarm.triggerAlarm()) {
                 std::cout << "Alarm triggered" << std::endl;
                 startBuzzer();
