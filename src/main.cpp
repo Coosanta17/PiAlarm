@@ -11,7 +11,7 @@
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
 #define FREQUENCY 880  // A5 in Hz
-#define PWM_DUTY_CYCLE 300000  // 30% duty cycle
+#define PWM_DUTY_CYCLE 500000  // 50% duty cycle
 
 #define SHUTDOWN_ENABLED true
 #define LONG_PRESS_DURATION std::chrono::seconds(7)
@@ -152,7 +152,7 @@ void debugAlarmNotForRelease() {
                                Sunday, Monday, Tuesday,
                                Wednesday, Thursday, Friday,
                                Saturday
-                           }, true, Saturday));
+                           }, false, Saturday));
 }
 
 int main() {
