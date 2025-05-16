@@ -8,7 +8,7 @@ Currently unfinished. Once finished this file will have all the information on h
 - [x] buzzer
 - [x] button
 - [ ] display
-- [ ] alarm function
+- [x] alarm function
 - [ ] api
 - [ ] frontend
 - [ ] finished!!
