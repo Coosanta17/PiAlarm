@@ -160,7 +160,7 @@ int main() {
         debugAlarmNotForRelease();
         initialize();
 
-        std::cout << "Alarm initialised successfully.";
+        std::cout << "Alarm initialised successfully." << std::endl;
 
         runLoops();
 
