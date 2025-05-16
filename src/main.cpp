@@ -147,7 +147,7 @@ void runLoops() {
 void debugAlarmNotForRelease() {
     alarms.push_back(Alarm(5, 55, {Tuesday, Wednesday, Thursday}));
     alarms.push_back(Alarm(6, 55, {Monday, Friday}));
-    alarms.push_back(Alarm(4, 55, {Saturday}, false));
+    alarms.push_back(Alarm(4, 55, {Saturday}, true));
     alarms.push_back(Alarm(21, 50, {
                                Sunday, Monday, Tuesday,
                                Wednesday, Thursday, Friday,
@@ -159,6 +159,9 @@ int main() {
     try {
         debugAlarmNotForRelease();
         initialize();
+
+        std::cout << "Alarm initialised successfully.";
+
         runLoops();
 
         if (buttonThread.joinable()) buttonThread.join();
