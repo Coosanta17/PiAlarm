@@ -1,4 +1,5 @@
 #include "util.h"
+#include "alarm.h"
 
 std::string toLowerString(std::string_view str) {
     std::string result(str);
