@@ -1,4 +1,4 @@
-#include "../include/buzzer.h"
+#include "buzzer.h"
 
 constexpr int beatDuration = 150000; // Microseconds
 constexpr int gapDuration = 20000;

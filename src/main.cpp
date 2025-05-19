@@ -3,10 +3,12 @@
 #include <pigpio.h>
 #include <unistd.h>
 #include <csignal>
+#include <fstream>
 #include <thread>
 #include <vector>
-#include "../include/buzzer.h"
-#include "../include/alarm.h"
+
+#include "buzzer.h"
+#include "alarm.h"
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
@@ -153,6 +155,13 @@ void debugAlarmNotForRelease() {
                                Wednesday, Thursday, Friday,
                                Saturday
                            }, false, Saturday));
+
+    nlohmann::json alarmsJson;
+    // Direct call because compiler cannot detect.
+    toJson(alarmsJson["alarms"], alarms);
+
+    std::ofstream file("alarms.json");
+    file << alarmsJson;
 }
 
 int main() {

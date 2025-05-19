@@ -5,10 +5,8 @@
 #include <optional>
 #include <stdexcept>
 #include <unordered_set>
-
-enum DayOfWeek {
-    Sunday = 0, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
-};
+#include <nlohmann/json.hpp>
+#include "util.h"
 
 template<>
 struct std::hash<DayOfWeek> {
@@ -23,6 +21,8 @@ class Alarm {
     bool enabled;
     std::unordered_set<DayOfWeek> days;
     std::optional<DayOfWeek> lastRunDay;
+
+    void fromJson(const nlohmann::json &j);
 
 public:
     explicit Alarm() : hour(0), minute(0), enabled(false), days({}), lastRunDay(std::nullopt) {
@@ -45,8 +45,12 @@ public:
     }
 
     explicit Alarm(const int hour, const int minute, const std::unordered_set<DayOfWeek> &days, const bool enabled,
-          const DayOfWeek lastRunDay) : Alarm(hour, minute, days, enabled) {
+                   const DayOfWeek lastRunDay) : Alarm(hour, minute, days, enabled) {
         this->lastRunDay = lastRunDay;
+    }
+
+    explicit Alarm(const nlohmann::json &j) : Alarm() {
+        fromJson(j);
     }
 
     void setDayEnabled(const int day, const bool enabled) {
@@ -91,6 +95,10 @@ public:
     [[nodiscard]] std::optional<DayOfWeek> getLastRunDay() const { return lastRunDay; }
 
     [[nodiscard]] bool triggerAlarm();
+
+    [[nodiscard]] nlohmann::json toJson() const;
+
+    static Alarm createFromJson(const std::string &jsonStr);
 };
 
 #endif //ALARM_H

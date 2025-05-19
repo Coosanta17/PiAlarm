@@ -11,6 +11,7 @@ add_executable(pi_alarm
         src/main.cpp
         src/alarm.cpp
         src/buzzer.cpp
+        src/util.cpp
 )
 
 target_link_libraries(pi_alarm PRIVATE
@@ -18,6 +19,7 @@ target_link_libraries(pi_alarm PRIVATE
         pthread
         rt
         httplib::httplib
+        nlohmann_json::nlohmann_json
 )
 
 target_include_directories(pi_alarm PRIVATE
