@@ -162,6 +162,7 @@ void debugAlarmNotForRelease() {
 
     std::ofstream file("alarms.json");
     file << alarmsJson;
+    file.close();
 }
 
 int main() {
