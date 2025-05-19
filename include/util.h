@@ -1,7 +1,6 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <array>
 #include <string_view>
 #include <string>
 #include <nlohmann/json.hpp>
@@ -10,10 +9,6 @@ class Alarm;
 
 enum DayOfWeek {
     Sunday = 0, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
-};
-
-inline constexpr std::array<std::string_view, 7> dayNames = {
-    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 };
 
 std::string toLowerString(std::string_view str);
