@@ -9,6 +9,8 @@
 
 #include "buzzer.h"
 #include "alarm.h"
+#include "api.h"
+#include "alarms_vector.h"
 
 #define BUZZER_GPIO 12  // PWM 0
 #define BUTTON_GPIO 5
@@ -20,8 +22,6 @@
 
 std::thread buttonThread;
 std::thread alarmThread;
-
-std::vector<Alarm> alarms;
 
 int lastButtonState = 1;
 std::chrono::steady_clock::time_point buttonPressStartTime;
@@ -130,7 +130,7 @@ void buttonAndBuzzerLoop() {
 
 void alarmLoop() {
     while (running) {
-        for (Alarm &alarm: alarms) {
+        for (auto alarms = AlarmsVector::getInstance().getAlarmsCopy(); Alarm &alarm: alarms) {
             if (alarm.triggerAlarm()) {
                 std::cout << "Alarm triggered" << std::endl;
                 startBuzzer();
@@ -146,36 +146,20 @@ void runLoops() {
     alarmThread = std::thread(alarmLoop);
 }
 
-void debugAlarmNotForRelease() {
-    alarms.push_back(Alarm(5, 55, {Tuesday, Wednesday, Thursday}));
-    alarms.push_back(Alarm(6, 55, {Monday, Friday}));
-    alarms.push_back(Alarm(4, 55, {Saturday}, true));
-    alarms.push_back(Alarm(21, 50, {
-                               Sunday, Monday, Tuesday,
-                               Wednesday, Thursday, Friday,
-                               Saturday
-                           }, false, Saturday));
-
-    nlohmann::json alarmsJson;
-    // Direct call because compiler cannot detect.
-    toJson(alarmsJson["alarms"], alarms);
-
-    std::ofstream file("alarms.json");
-    file << alarmsJson;
-    file.close();
-}
-
 int main() {
     try {
-        debugAlarmNotForRelease();
+        AlarmsVector::initializeInstance("alarms.json");
+
         initialize();
-
         std::cout << "Alarm initialised successfully." << std::endl;
-
         runLoops();
+
+        startApiServer();
 
         if (buttonThread.joinable()) buttonThread.join();
         if (alarmThread.joinable()) alarmThread.join();
+
+        stopApiServer();
 
         stopBuzzer();
         gpioHardwarePWM(BUZZER_GPIO, 0, 0);

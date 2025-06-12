@@ -4,6 +4,8 @@ project(pi_alarm)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+add_compile_definitions(ALARMS_VECTOR_WRITE_ACCESS)
+
 find_package(httplib REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
@@ -12,6 +14,8 @@ add_executable(pi_alarm
         src/alarm.cpp
         src/buzzer.cpp
         src/util.cpp
+        src/api.cpp
+        src/alarms_vector.cpp
 )
 
 target_link_libraries(pi_alarm PRIVATE
