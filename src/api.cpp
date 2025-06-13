@@ -5,7 +5,7 @@
 #include "util.h"
 #include "alarms_vector.h"
 
-#define ALARM_MANAGER_WRITE_ACCESS
+#define ALARMS_VECTOR_WRITE_ACCESS
 
 std::unique_ptr<ApiServer> g_apiServer = nullptr;
 
@@ -17,6 +17,107 @@ ApiServer::~ApiServer() {
     stop();
 }
 
+void ApiServer::registerEndpoints() const {
+    auto handleError = [
+            ](httplib::Response &res, const int status, const std::string &message, const std::exception &e) {
+        res.status = status;
+        res.set_content(R"({"error":")" + message + R"("})", "application/json");
+        std::cerr << "Error processing request: " << e.what() << std::endl;
+    };
+
+    auto validateAlarmIndex = [](const int index, const std::vector<Alarm> &alarms, httplib::Response &res) -> bool {
+        if (index < 0 || static_cast<size_t>(index) >= alarms.size()) {
+            res.status = 404;
+            res.set_content(R"({"error":"Alarm not found"})", "application/json");
+            return false;
+        }
+        return true;
+    };
+
+    auto sendSuccessResponse = [](httplib::Response &res, const int status, const std::string &message) {
+        res.status = status;
+        res.set_content(R"({"status":"success","message":")" + message + R"("})", "application/json");
+    };
+
+    // Get all alarms
+    server->Get("/v1/alarms", [handleError](const httplib::Request &, httplib::Response &res) {
+        try {
+            nlohmann::json response;
+            toJson(response["alarms"], AlarmsVector::getInstance().getAlarmsCopy());
+            res.set_content(response.dump(), "application/json");
+        } catch (const std::exception &e) {
+            handleError(res, 500, "Internal server error", e);
+        }
+    });
+
+    // Get alarm by index
+    server->Get("/v1/alarms/([0-9]+)",
+                [handleError, validateAlarmIndex](const httplib::Request &req, httplib::Response &res) {
+                    try {
+                        const int index = std::stoi(req.matches[1]);
+                        const auto alarms = AlarmsVector::getInstance().getAlarmsCopy();
+
+                        if (!validateAlarmIndex(index, alarms, res)) return;
+
+                        res.set_content(alarms[index].toJson().dump(), "application/json");
+                    } catch (const std::exception &e) {
+                        handleError(res, 500, "Internal server error", e);
+                    }
+                });
+
+    // Create new alarm
+    server->Post("/v1/alarms", [handleError, sendSuccessResponse](const httplib::Request &req, httplib::Response &res) {
+        try {
+            const auto json = nlohmann::json::parse(req.body);
+            AlarmsVector::getInstance().addAlarm(Alarm::createFromJson(json.dump()));
+            sendSuccessResponse(res, 201, "Alarm created");
+        } catch (const nlohmann::json::parse_error &e) {
+            handleError(res, 400, "Invalid JSON format", e);
+        } catch (const std::exception &e) {
+            handleError(res, 500, "Internal server error", e);
+        }
+    });
+
+    // Update alarm at index
+    server->Put("/v1/alarms/([0-9]+)",
+                [handleError, validateAlarmIndex, sendSuccessResponse](const httplib::Request &req,
+                                                                       httplib::Response &res) {
+                    try {
+                        const int index = std::stoi(req.matches[1]);
+
+                        if (const auto alarms = AlarmsVector::getInstance().getAlarmsCopy(); !validateAlarmIndex(
+                            index, alarms, res))
+                            return;
+
+                        const auto json = nlohmann::json::parse(req.body);
+                        AlarmsVector::getInstance().updateAlarm(index, Alarm::createFromJson(json.dump()));
+                        sendSuccessResponse(res, 200, "Alarm updated");
+                    } catch (const nlohmann::json::parse_error &e) {
+                        handleError(res, 400, "Invalid JSON format", e);
+                    } catch (const std::exception &e) {
+                        handleError(res, 500, "Internal server error", e);
+                    }
+                });
+
+    // Delete alarm at index
+    server->Delete("/v1/alarms/([0-9]+)",
+                   [handleError, validateAlarmIndex, sendSuccessResponse](
+               const httplib::Request &req, httplib::Response &res) {
+                       try {
+                           const int index = std::stoi(req.matches[1]);
+
+                           if (const auto alarms = AlarmsVector::getInstance().getAlarmsCopy(); !validateAlarmIndex(
+                               index, alarms, res))
+                               return;
+
+                           AlarmsVector::getInstance().deleteAlarm(index);
+                           sendSuccessResponse(res, 200, "Alarm deleted");
+                       } catch (const std::exception &e) {
+                           handleError(res, 500, "Internal server error", e);
+                       }
+                   });
+}
+
 void ApiServer::start() {
     if (server_running) {
         std::cout << "API server is already running" << std::endl;
@@ -26,22 +127,11 @@ void ApiServer::start() {
     try {
         server = std::make_unique<httplib::Server>();
 
-        server->Get("/v1/alarms", [](const httplib::Request &, httplib::Response &res) {
-            try {
-                nlohmann::json jsonResponse;
-                toJson(jsonResponse["alarms"], AlarmsVector::getInstance().getAlarmsCopy());
-                res.set_content(jsonResponse.dump(), "application/json");
-            } catch (const std::exception &e) {
-                res.status = 500;
-                res.set_content(R"({"error":"Internal server error"})", "application/json");
-                std::cerr << "Error processing request: " << e.what() << std::endl;
-            }
-        });
+        registerEndpoints();
 
-        // TODO: Add endpoints for creating, updating, deleting
-
+        // Start server in a separate thread
         server_running = true;
-        server_thread = std::thread([this]() {
+        server_thread = std::thread([this] {
             std::cout << "API server started on port " << port << std::endl;
             if (!server->listen("0.0.0.0", port)) {
                 std::cerr << "Failed to start server on port " << port << std::endl;

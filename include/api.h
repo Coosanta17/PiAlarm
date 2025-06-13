@@ -20,6 +20,8 @@ public:
 
     ~ApiServer();
 
+    void registerEndpoints() const;
+
     void start();
 
     void stop();
