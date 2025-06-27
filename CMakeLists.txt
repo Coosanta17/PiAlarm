@@ -4,7 +4,10 @@ project(pi_alarm)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_compile_definitions(ALARMS_VECTOR_WRITE_ACCESS)
+set_source_files_properties(
+        src/api.cpp
+        PROPERTIES COMPILE_DEFINITIONS ALARMS_VECTOR_WRITE_ACCESS
+)
 
 find_package(httplib REQUIRED)
 find_package(nlohmann_json REQUIRED)
