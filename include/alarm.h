@@ -98,7 +98,7 @@ public:
 
     [[nodiscard]] nlohmann::json toJson() const;
 
-    static Alarm createFromJson(const std::string &jsonStr);
+    static Alarm createFromJson(const nlohmann::json& j);
 };
 
 #endif //ALARM_H

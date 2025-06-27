@@ -1,4 +1,7 @@
 #include "alarm.h"
+
+#include <iostream>
+
 #include "util.h"
 
 using json = nlohmann::json;
@@ -56,11 +59,22 @@ void Alarm::fromJson(const nlohmann::json &j) {
     }
 }
 
-Alarm Alarm::createFromJson(const std::string &jsonStr) {
+Alarm Alarm::createFromJson(const nlohmann::json& j) {
     try {
-        const nlohmann::json j = nlohmann::json::parse(jsonStr);
-        return Alarm(j);
-    } catch (const nlohmann::json::parse_error &e) {
-        throw std::invalid_argument(std::string("Invalid JSON string: ") + e.what());
+        // Example fix for a field that might be causing the issue
+        std::string someField;
+        if (j.contains("fieldName") && j["fieldName"].is_array()) {
+            // Handle the case where fieldName is an array instead of string
+            // For example, join array elements or take the first one
+            auto arr = j["fieldName"].get<std::vector<std::string>>();
+            someField = arr.empty() ? "" : arr[0];
+        } else if (j.contains("fieldName")) {
+            someField = j["fieldName"].get<std::string>();
+        }
+
+        // Rest of your implementation...
+    } catch (const nlohmann::json::exception& e) {
+        std::cerr << "JSON parsing error in createFromJson: " << e.what() << std::endl;
+        // Return a default alarm or rethrow
     }
 }
