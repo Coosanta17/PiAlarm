@@ -5,8 +5,6 @@
 #include "util.h"
 #include "alarms_vector.h"
 
-#define ALARMS_VECTOR_WRITE_ACCESS
-
 std::unique_ptr<ApiServer> g_apiServer = nullptr;
 
 ApiServer::ApiServer(const int server_port)
