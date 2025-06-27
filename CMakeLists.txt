@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set_source_files_properties(
         src/api.cpp
+        src/alarms_vector.cpp
         PROPERTIES COMPILE_DEFINITIONS ALARMS_VECTOR_WRITE_ACCESS
 )
 
