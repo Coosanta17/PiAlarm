@@ -61,20 +61,24 @@ void Alarm::fromJson(const nlohmann::json &j) {
 
 Alarm Alarm::createFromJson(const nlohmann::json& j) {
     try {
-        // Example fix for a field that might be causing the issue
-        std::string someField;
-        if (j.contains("fieldName") && j["fieldName"].is_array()) {
-            // Handle the case where fieldName is an array instead of string
-            // For example, join array elements or take the first one
-            auto arr = j["fieldName"].get<std::vector<std::string>>();
-            someField = arr.empty() ? "" : arr[0];
-        } else if (j.contains("fieldName")) {
-            someField = j["fieldName"].get<std::string>();
+        Alarm alarm;
+        alarm.setTime(j.at("hour").get<int>(), j.at("minute").get<int>());
+        alarm.setEnabled(j.at("enabled").get<bool>());
+
+        for (const auto& d: j.at("days")) {
+            alarm.days.insert(d.get<DayOfWeek>());
         }
 
-        // Rest of your implementation...
+        if (j.contains("lastRunDay") && !j["lastRunDay"].is_null()) {
+            alarm.lastRunDay = j["lastRunDay"].get<DayOfWeek>();
+        } else {
+            alarm.lastRunDay = std::nullopt;
+        }
+
+        return alarm;
     } catch (const nlohmann::json::exception& e) {
         std::cerr << "JSON parsing error in createFromJson: " << e.what() << std::endl;
-        // Return a default alarm or rethrow
+        return Alarm();
     }
 }
+
