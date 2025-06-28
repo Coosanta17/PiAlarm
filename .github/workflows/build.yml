@@ -20,7 +20,7 @@ jobs:
       run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
       
     - name: Build with CMake
-      run: cmake --build . -j
+      run: cmake --build build -j
       
     - name: Upload artefact
       uses: actions/upload-artifact@v4
