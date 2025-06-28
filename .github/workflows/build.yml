@@ -26,6 +26,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: pi_alarm
-        path: ./pi_alarm
+        path: ./build/pi_alarm
         retention-days: 90
       
