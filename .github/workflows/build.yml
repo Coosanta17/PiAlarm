@@ -1,0 +1,31 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: raspberry-pi
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Conan dependencies
+      run: conan install . --build=missing
+      
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
+      
+    - name: Build with CMake
+      run: cmake --build . -j
+      
+    - name: Upload artefact
+      uses: actions/upload-artifact@v3
+      with:
+        name: pi_alarm
+        path: ./pi_alarm
+        retention-days: 90
+      
