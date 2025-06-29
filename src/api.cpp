@@ -73,15 +73,15 @@ void ApiServer::registerEndpoints() const {
 
     /**
      * Example curl command:
-     * curl -X POST http://localhost:8080/v1/alarms \
-     *      -H "Content-Type: application/json" \
-     *      -d '{"hour":7,"minute":30,"days":[1,2,3,4,5],"enabled":true}'
+       curl -X POST http://localhost:8080/v1/alarms \
+            -H "Content-Type: application/json" \
+            -d '{"hour":21,"minute":0,"days":[1,2,3,4,5,6,7],"enabled":true}'
      */
     // Create new alarm
     server->Post("/v1/alarms", [handleError, sendSuccessResponse](const httplib::Request &req, httplib::Response &res) {
         try {
             const auto json = nlohmann::json::parse(req.body);
-            AlarmsVector::getInstance().addAlarm(Alarm::createFromJson(json.dump()));
+            AlarmsVector::getInstance().addAlarm(Alarm::createFromJson(json));
             sendSuccessResponse(res, 201, "Alarm created");
         } catch (const nlohmann::json::parse_error &e) {
             handleError(res, 400, "Invalid JSON format", e);
@@ -92,9 +92,9 @@ void ApiServer::registerEndpoints() const {
 
     /**
      * Example curl command:
-     * curl -X PUT http://localhost:8080/v1/alarms/0 \
-     *      -H "Content-Type: application/json" \
-     *      -d '{"hour":8,"minute":0,"days":[1,2,3,4,5],"enabled":true}'
+       curl -X PUT http://localhost:8080/v1/alarms/0 \
+            -H "Content-Type: application/json" \
+            -d '{"hour":8,"minute":0,"days":[1,2,3,4,5],"enabled":true}'
      */
     // Update alarm at index
     server->Put("/v1/alarms/([0-9]+)",
@@ -108,7 +108,7 @@ void ApiServer::registerEndpoints() const {
                             return;
 
                         const auto json = nlohmann::json::parse(req.body);
-                        AlarmsVector::getInstance().updateAlarm(index, Alarm::createFromJson(json.dump()));
+                        AlarmsVector::getInstance().updateAlarm(index, Alarm::createFromJson(json));
                         sendSuccessResponse(res, 200, "Alarm updated");
                     } catch (const nlohmann::json::parse_error &e) {
                         handleError(res, 400, "Invalid JSON format", e);
