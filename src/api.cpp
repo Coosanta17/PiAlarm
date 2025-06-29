@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include "util.h"
 #include "alarms_vector.h"
+#include "buzzer.h"
 
 std::unique_ptr<ApiServer> g_apiServer = nullptr;
 
@@ -49,6 +50,20 @@ void ApiServer::registerEndpoints() const {
             res.set_content(response.dump(), "application/json");
         } catch (const std::exception &e) {
             handleError(res, 500, "Internal server error", e);
+        }
+    });
+
+    /**
+     * Example curl command:
+     * curl -X POST http://localhost:8080/v1/buzzer/start
+     */
+    // Start buzzer endpoint
+    server->Post("/v1/buzzer/start", [handleError, sendSuccessResponse](const httplib::Request &, httplib::Response &res) {
+        try {
+            startBuzzer();
+            sendSuccessResponse(res, 200, "Buzzer ringing successfully");
+        } catch (const std::exception &e) {
+            handleError(res, 500, "Failed to start buzzer", e);
         }
     });
 
