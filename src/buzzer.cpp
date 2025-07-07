@@ -3,7 +3,7 @@
 constexpr int beatDuration = 150000; // Microseconds
 constexpr int gapDuration = 20000;
 
-extern std::mutex buzzer_mutex;
+std::mutex buzzer_mutex;
 bool sound = false;
 bool on = false;
 unsigned long lastUpdateTime = 0;
