@@ -3,6 +3,7 @@
 constexpr int beatDuration = 150000; // Microseconds
 constexpr int gapDuration = 20000;
 
+extern std::mutex buzzer_mutex;
 bool sound = false;
 bool on = false;
 unsigned long lastUpdateTime = 0;
@@ -10,6 +11,7 @@ int patternPosition = 0;
 int beatCount = 0;
 
 void startBuzzer() {
+    std::lock_guard lock(buzzer_mutex);
     on = true;
     patternPosition = 0;
     beatCount = 0;
@@ -17,6 +19,7 @@ void startBuzzer() {
 }
 
 void stopBuzzer() {
+    std::lock_guard lock(buzzer_mutex);
     on = false;
     sound = false;
 }
@@ -26,6 +29,7 @@ bool isRunning() {
 }
 
 void updateBuzzer() {
+    std::lock_guard lock(buzzer_mutex);
     if (!on) return;
 
     const unsigned long currentTime = micros();

@@ -58,14 +58,30 @@ void ApiServer::registerEndpoints() const {
      * curl -X POST http://localhost:8080/v1/buzzer/start
      */
     // Start buzzer endpoint
-    server->Post("/v1/buzzer/start", [handleError, sendSuccessResponse](const httplib::Request &, httplib::Response &res) {
-        try {
-            startBuzzer();
-            sendSuccessResponse(res, 200, "Buzzer ringing successfully");
-        } catch (const std::exception &e) {
-            handleError(res, 500, "Failed to start buzzer", e);
-        }
-    });
+    server->Post("/v1/buzzer/start",
+                 [handleError, sendSuccessResponse](const httplib::Request &, httplib::Response &res) {
+                     try {
+                         startBuzzer();
+                         sendSuccessResponse(res, 200, "Buzzer ringing successfully");
+                     } catch (const std::exception &e) {
+                         handleError(res, 500, "Failed to start buzzer", e);
+                     }
+                 });
+
+    /**
+     * Example curl command:
+     * curl -X POST http://localhost:8080/v1/buzzer/start
+     */
+    // Stop buzzer endpoint
+    server->Post("/v1/buzzer/stop",
+                 [handleError, sendSuccessResponse](const httplib::Request &, httplib::Response &res) {
+                     try {
+                         stopBuzzer();
+                         sendSuccessResponse(res, 200, "Buzzer stopped successfully");
+                     } catch (const std::exception &e) {
+                         handleError(res, 500, "Failed to stop buzzer", e);
+                     }
+                 });
 
     /**
      * Example curl command:
@@ -90,7 +106,7 @@ void ApiServer::registerEndpoints() const {
      * Example curl command:
        curl -X POST http://localhost:8080/v1/alarms \
             -H "Content-Type: application/json" \
-            -d '{"hour":21,"minute":0,"days":[1,2,3,4,5,6,7],"enabled":true}'
+            -d '{"hour":21,"minute":0,"days":[0,1,2,3,4,5,6],"enabled":true}'
      */
     // Create new alarm
     server->Post("/v1/alarms", [handleError, sendSuccessResponse](const httplib::Request &req, httplib::Response &res) {

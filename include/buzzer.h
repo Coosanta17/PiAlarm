@@ -3,13 +3,20 @@
 
 #include <unistd.h>
 #include <ctime>
+#include <mutex>
 
+extern std::mutex buzzer_mutex;
 extern bool sound;
+extern bool on;
 
 void startBuzzer();
+
 void stopBuzzer();
+
 bool isRunning();
+
 void updateBuzzer();
+
 unsigned long micros();
 
 #endif //BUZZER_H

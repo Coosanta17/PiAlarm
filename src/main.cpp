@@ -116,9 +116,13 @@ void buttonAndBuzzerLoop() {
 
         lastButtonState = buttonState;
 
-        updateBuzzer();
+        bool should_sound; {
+            std::lock_guard lock(buzzer_mutex);
+            updateBuzzer();
+            should_sound = sound;
+        }
 
-        if (sound) {
+        if (should_sound) {
             gpioHardwarePWM(BUZZER_GPIO, FREQUENCY, PWM_DUTY_CYCLE);
         } else {
             gpioHardwarePWM(BUZZER_GPIO, 0, 0);
