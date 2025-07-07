@@ -5,7 +5,6 @@
 #include <ctime>
 #include <mutex>
 
-extern std::mutex buzzer_mutex;
 extern bool sound;
 extern bool on;
 
