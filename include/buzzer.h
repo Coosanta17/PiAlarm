@@ -3,10 +3,8 @@
 
 #include <unistd.h>
 #include <ctime>
-#include <mutex>
 
 extern bool sound;
-extern bool on;
 
 void startBuzzer();
 

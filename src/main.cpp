@@ -21,7 +21,6 @@
 #define LONG_PRESS_DURATION std::chrono::seconds(7)
 
 std::thread buttonThread;
-std::thread alarmThread;
 
 int lastButtonState = 1;
 std::chrono::steady_clock::time_point buttonPressStartTime;
@@ -36,7 +35,7 @@ void signalHandler(const int signum) {
     std::cout << "Exiting." << std::endl;
 }
 
-void waitUntilNextMinute() {
+std::chrono::system_clock::time_point getNextMinuteTime() {
     using namespace std::chrono;
     const auto now = system_clock::now();
     const auto time_t_now = system_clock::to_time_t(now);
@@ -44,11 +43,7 @@ void waitUntilNextMinute() {
 
     tm_now->tm_sec = 0;
     tm_now->tm_min += 1;
-    const auto target = system_clock::from_time_t(std::mktime(tm_now));
-
-    while (running && system_clock::now() < target) {
-        std::this_thread::sleep_for(milliseconds(500));
-    }
+    return system_clock::from_time_t(std::mktime(tm_now));
 }
 
 void initialize() {
@@ -87,61 +82,62 @@ void buttonLongPressed() {
 }
 
 void buttonAndBuzzerLoop() {
+    auto now = std::chrono::system_clock::now();
+    auto nowTimeT = std::chrono::system_clock::to_time_t(now);
+    int lastCheckedMinute = std::floor(nowTimeT / 60);
+    bool lastBuzzerState = false;
+
     while (running) {
         const int buttonState = gpioRead(BUTTON_GPIO);
 
-        /*
-         * This only detects the iteration where the button was not pressed last iteration (10ms ago) and is pressed now
-         * I forgot what this did, and I'm sure others who may read this code may also be confused a bit, or maybe it is
-         * just me...
-         */
         if (buttonState == 0 && lastButtonState == 1) {
             buttonPressStartTime = std::chrono::steady_clock::now();
             isButtonCurrentlyPressed = true;
             buttonPressed();
-        }
-
-        if (buttonState == 0 && isButtonCurrentlyPressed) {
+        } else if (buttonState == 0 && isButtonCurrentlyPressed) {
             if (auto currentDuration = std::chrono::steady_clock::now() - buttonPressStartTime;
                 currentDuration >= LONG_PRESS_DURATION && !longPressDetected) {
                 longPressDetected = true;
                 buttonLongPressed();
             }
-        }
-
-        if (buttonState == 1 && lastButtonState == 0) {
+        } else if (buttonState == 1 && lastButtonState == 0) {
             longPressDetected = false;
             isButtonCurrentlyPressed = false;
         }
 
         lastButtonState = buttonState;
 
-        if (sound) {
-            gpioHardwarePWM(BUZZER_GPIO, FREQUENCY, PWM_DUTY_CYCLE);
-        } else {
-            gpioHardwarePWM(BUZZER_GPIO, 0, 0);
+        if (sound != lastBuzzerState) {
+            if (sound) {
+                gpioHardwarePWM(BUZZER_GPIO, FREQUENCY, PWM_DUTY_CYCLE);
+            } else {
+                gpioHardwarePWM(BUZZER_GPIO, 0, 0);
+            }
+            lastBuzzerState = sound;
         }
 
-        usleep(10000); // 10ms
-    }
-}
+        if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - now).count() >= 1) {
+            now = std::chrono::system_clock::now();
+            nowTimeT = std::chrono::system_clock::to_time_t(now);
 
-void alarmLoop() {
-    while (running) {
-        for (auto alarms = AlarmsVector::getInstance().getAlarmsCopy(); Alarm &alarm: alarms) {
-            if (alarm.triggerAlarm()) {
-                std::cout << "Alarm triggered" << std::endl;
-                startBuzzer();
+            if (const int currentMinute = std::floor(nowTimeT / 60); currentMinute > lastCheckedMinute) {
+                for (auto &alarmVector = AlarmsVector::getInstance(); auto &alarm: alarmVector.getAlarmsCopy()) {
+                    if (alarm.triggerAlarm()) {
+                        std::cout << "Alarm triggered" << std::endl;
+                        startBuzzer();
+                    }
+                }
+                lastCheckedMinute = currentMinute;
             }
         }
 
-        waitUntilNextMinute();
+        updateBuzzer();
+        usleep(10000); // 10ms
     }
 }
 
 void runLoops() {
     buttonThread = std::thread(buttonAndBuzzerLoop);
-    alarmThread = std::thread(alarmLoop);
 }
 
 int main() {
@@ -155,7 +151,6 @@ int main() {
         startApiServer();
 
         if (buttonThread.joinable()) buttonThread.join();
-        if (alarmThread.joinable()) alarmThread.join();
 
         stopApiServer();
 
