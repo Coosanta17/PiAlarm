@@ -10,21 +10,8 @@ std::unique_ptr<AlarmsVector> AlarmsVector::instance = nullptr;
 std::mutex AlarmsVector::instanceMutex;
 
 AlarmsVector::AlarmsVector(const std::string &filename) {
-    if (!filename.empty()) {
-        if (std::ifstream file(filename); file.is_open()) {
-            try {
-                nlohmann::json j;
-                file >> j;
-                for (const auto &alarmJson: j) {
-                    Alarm alarm = Alarm::createFromJson(alarmJson);
-                    alarms.push_back(alarm);
-                }
-            } catch (const std::exception &e) {
-                std::cerr << "Error loading alarms from file during initialization: " << e.what() << std::endl;
-            }
-            file.close();
-        }
-    }
+    this->filename = filename;
+    loadFromFile();
 }
 
 void AlarmsVector::initializeInstance(const std::string &filename) {
@@ -94,6 +81,11 @@ void AlarmsVector::loadFromFile(const std::string &filename) {
     }
 }
 
+void AlarmsVector::loadFromFile() {
+    loadFromFile(this->filename);
+}
+
+
 void AlarmsVector::saveToFile(const std::string &filename) {
     std::lock_guard<std::mutex> lock(alarmsMutex);
     if (std::ofstream file(filename); file.is_open()) {
@@ -109,4 +101,9 @@ void AlarmsVector::saveToFile(const std::string &filename) {
         file.close();
     }
 }
+
+void AlarmsVector::saveToFile() {
+    saveToFile(this->filename);
+}
+
 #endif

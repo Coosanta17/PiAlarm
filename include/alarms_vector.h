@@ -10,6 +10,8 @@
 class AlarmsVector {
     explicit AlarmsVector(const std::string &filename = "");
 
+    std::string filename;
+
     // Delete copy and move operations
     AlarmsVector(const AlarmsVector &) = delete;
 
@@ -43,7 +45,11 @@ public:
 
     void loadFromFile(const std::string &filename);
 
+    void loadFromFile();
+
     void saveToFile(const std::string &filename);
+
+    void saveToFile();
 #endif
 };
 

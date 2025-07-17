@@ -4,7 +4,6 @@
 #include <nlohmann/json.hpp>
 #include "util.h"
 #include "alarms_vector.h"
-#include "buzzer.h"
 
 std::unique_ptr<ApiServer> g_apiServer = nullptr;
 
@@ -27,7 +26,7 @@ void ApiServer::registerEndpoints() const {
     auto validateAlarmIndex = [](const int index, const std::vector<Alarm> &alarms, httplib::Response &res) -> bool {
         if (index < 0 || static_cast<size_t>(index) >= alarms.size()) {
             res.status = 404;
-            res.set_content(R"({"error":"Alarm not found"})", "application/json");
+            res.set_content(R"({"error":"Alarm not found - Index out of bounds."})", "application/json");
             return false;
         }
         return true;
@@ -83,6 +82,7 @@ void ApiServer::registerEndpoints() const {
         try {
             const auto json = nlohmann::json::parse(req.body);
             AlarmsVector::getInstance().addAlarm(Alarm::createFromJson(json));
+            AlarmsVector::getInstance().saveToFile();
             sendSuccessResponse(res, 201, "Alarm created");
         } catch (const nlohmann::json::parse_error &e) {
             handleError(res, 400, "Invalid JSON format", e);
@@ -104,12 +104,12 @@ void ApiServer::registerEndpoints() const {
                     try {
                         const int index = std::stoi(req.matches[1]);
 
-                        if (const auto alarms = AlarmsVector::getInstance().getAlarmsCopy(); !validateAlarmIndex(
-                            index, alarms, res))
-                            return;
+                        if (const auto alarms = AlarmsVector::getInstance().getAlarmsCopy();
+                            !validateAlarmIndex(index, alarms, res)) { return; }
 
                         const auto json = nlohmann::json::parse(req.body);
                         AlarmsVector::getInstance().updateAlarm(index, Alarm::createFromJson(json));
+                        AlarmsVector::getInstance().saveToFile();
                         sendSuccessResponse(res, 200, "Alarm updated");
                     } catch (const nlohmann::json::parse_error &e) {
                         handleError(res, 400, "Invalid JSON format", e);
@@ -129,11 +129,11 @@ void ApiServer::registerEndpoints() const {
                        try {
                            const int index = std::stoi(req.matches[1]);
 
-                           if (const auto alarms = AlarmsVector::getInstance().getAlarmsCopy(); !validateAlarmIndex(
-                               index, alarms, res))
-                               return;
+                           if (const auto alarms = AlarmsVector::getInstance().getAlarmsCopy();
+                               !validateAlarmIndex(index, alarms, res)) { return; }
 
                            AlarmsVector::getInstance().deleteAlarm(index);
+                           AlarmsVector::getInstance().saveToFile();
                            sendSuccessResponse(res, 200, "Alarm deleted");
                        } catch (const std::exception &e) {
                            handleError(res, 500, "Internal server error", e);
