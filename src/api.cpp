@@ -43,6 +43,16 @@ void ApiServer::registerEndpoints() const {
         res.set_content(R"({"status":"success","message":")" + message + R"("})", "application/json");
     };
 
+    server->Options("/v1/alarms", [](const httplib::Request &, httplib::Response &res) {
+        addCorsHeaders(res);
+        res.status = 200;
+    });
+
+    server->Options(R"(/v1/alarms/([0-9]+))", [](const httplib::Request &, httplib::Response &res) {
+        addCorsHeaders(res);
+        res.status = 200;
+    });
+
     /**
      * Example curl command:
      * curl -X GET http://localhost:8080/v1/alarms
