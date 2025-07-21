@@ -15,6 +15,12 @@ ApiServer::~ApiServer() {
     stop();
 }
 
+void ApiServer::addCorsHeaders(httplib::Response &res) {
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type");
+}
+
 void ApiServer::registerEndpoints() const {
     auto handleError = [
             ](httplib::Response &res, const int status, const std::string &message, const std::exception &e) {
@@ -46,6 +52,7 @@ void ApiServer::registerEndpoints() const {
         try {
             nlohmann::json response;
             toJson(response["alarms"], AlarmsVector::getInstance().getAlarmsCopy());
+            addCorsHeaders(res);
             res.set_content(response.dump(), "application/json");
         } catch (const std::exception &e) {
             handleError(res, 500, "Internal server error", e);
@@ -65,6 +72,7 @@ void ApiServer::registerEndpoints() const {
 
                         if (!validateAlarmIndex(index, alarms, res)) return;
 
+                        addCorsHeaders(res);
                         res.set_content(alarms[index].toJson().dump(), "application/json");
                     } catch (const std::exception &e) {
                         handleError(res, 500, "Internal server error", e);
@@ -83,6 +91,8 @@ void ApiServer::registerEndpoints() const {
             const auto json = nlohmann::json::parse(req.body);
             AlarmsVector::getInstance().addAlarm(Alarm::createFromJson(json));
             AlarmsVector::getInstance().saveToFile();
+
+            addCorsHeaders(res);
             sendSuccessResponse(res, 201, "Alarm created");
         } catch (const nlohmann::json::parse_error &e) {
             handleError(res, 400, "Invalid JSON format", e);
@@ -110,6 +120,8 @@ void ApiServer::registerEndpoints() const {
                         const auto json = nlohmann::json::parse(req.body);
                         AlarmsVector::getInstance().updateAlarm(index, Alarm::createFromJson(json));
                         AlarmsVector::getInstance().saveToFile();
+
+                        addCorsHeaders(res);
                         sendSuccessResponse(res, 200, "Alarm updated");
                     } catch (const nlohmann::json::parse_error &e) {
                         handleError(res, 400, "Invalid JSON format", e);
@@ -134,6 +146,8 @@ void ApiServer::registerEndpoints() const {
 
                            AlarmsVector::getInstance().deleteAlarm(index);
                            AlarmsVector::getInstance().saveToFile();
+
+                           addCorsHeaders(res);
                            sendSuccessResponse(res, 200, "Alarm deleted");
                        } catch (const std::exception &e) {
                            handleError(res, 500, "Internal server error", e);

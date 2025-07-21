@@ -14,12 +14,14 @@ class ApiServer {
     bool server_running;
     int port;
 
+    void registerEndpoints() const;
+
+    static void addCorsHeaders(httplib::Response& res);
+
 public:
     explicit ApiServer(int server_port = 8080);
 
     ~ApiServer();
-
-    void registerEndpoints() const;
 
     void start();
 
