@@ -1,7 +1,7 @@
 #include "buzzer.h"
 
 constexpr int beatDuration = 150000; // Microseconds
-constexpr int gapDuration = 20000;
+constexpr int gapDuration = 50000;
 
 bool sound = false;
 bool on = false;
