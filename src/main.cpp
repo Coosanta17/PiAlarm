@@ -19,8 +19,7 @@
 
 #define SHUTDOWN_ENABLED true
 #define LONG_PRESS_DURATION std::chrono::seconds(7)
-
-std::thread buttonThread;
+#define LOOPS_IN_A_SECOND 20
 
 int lastButtonState = 1;
 std::chrono::steady_clock::time_point buttonPressStartTime;
@@ -69,7 +68,6 @@ void buttonPressed() {
 }
 
 void buttonLongPressed() {
-    // This will have to run in buttonThread
     if constexpr (!SHUTDOWN_ENABLED) return;
     std::cout << "Button long-pressed - shutting down" << std::endl;
 
@@ -84,7 +82,8 @@ void buttonLongPressed() {
 void buttonAndBuzzerLoop() {
     auto now = std::chrono::system_clock::now();
     auto nowTimeT = std::chrono::system_clock::to_time_t(now);
-    int lastCheckedMinute = std::floor(nowTimeT / 60);
+    int loopCounter = 0;
+    auto lastCheckedMinute = nowTimeT / 60;
     bool lastBuzzerState = false;
 
     while (running) {
@@ -107,7 +106,7 @@ void buttonAndBuzzerLoop() {
 
         lastButtonState = buttonState;
 
-        if (sound != lastBuzzerState) {
+        if (sound != lastBuzzerState) { // see buzzer.h for sound
             if (sound) {
                 gpioHardwarePWM(BUZZER_GPIO, FREQUENCY, PWM_DUTY_CYCLE);
             } else {
@@ -116,28 +115,28 @@ void buttonAndBuzzerLoop() {
             lastBuzzerState = sound;
         }
 
-        if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - now).count() >= 1) {
-            now = std::chrono::system_clock::now();
-            nowTimeT = std::chrono::system_clock::to_time_t(now);
+        if (loopCounter > LOOPS_IN_A_SECOND) {
+            if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - now).count() >= 1) {
+                now = std::chrono::system_clock::now();
+                nowTimeT = std::chrono::system_clock::to_time_t(now);
 
-            if (const int currentMinute = std::floor(nowTimeT / 60); currentMinute > lastCheckedMinute) {
-                for (auto &alarmVector = AlarmsVector::getInstance(); auto &alarm: alarmVector.getAlarmsCopy()) {
-                    if (alarm.triggerAlarm()) {
-                        std::cout << "Alarm triggered" << std::endl;
-                        startBuzzer();
+                if (const auto currentMinute = nowTimeT / 60; currentMinute > lastCheckedMinute) {
+                    for (auto &alarmVector = AlarmsVector::getInstance(); auto &alarm: alarmVector.getAlarmsCopy()) {
+                        if (alarm.triggerAlarm()) {
+                            std::cout << "Alarm triggered" << std::endl;
+                            startBuzzer();
+                        }
                     }
+                    lastCheckedMinute = currentMinute;
                 }
-                lastCheckedMinute = currentMinute;
             }
+            loopCounter = 0;
         }
 
         updateBuzzer();
-        usleep(10000); // 10ms
+        loopCounter++;
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
-}
-
-void runLoops() {
-    buttonThread = std::thread(buttonAndBuzzerLoop);
 }
 
 int main() {
@@ -146,11 +145,9 @@ int main() {
 
         initialize();
         std::cout << "Alarm initialised successfully." << std::endl;
-        runLoops();
 
         startApiServer();
-
-        if (buttonThread.joinable()) buttonThread.join();
+        buttonAndBuzzerLoop(); // Blocking until running is false
 
         stopApiServer();
 

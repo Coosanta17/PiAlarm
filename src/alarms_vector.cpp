@@ -49,7 +49,7 @@ void AlarmsVector::addAlarm(const Alarm &alarm) {
     alarms.push_back(alarm);
 }
 
-void AlarmsVector::updateAlarm(size_t index, const Alarm &alarm) {
+void AlarmsVector::updateAlarm(const size_t index, const Alarm &alarm) {
     std::lock_guard<std::mutex> lock(alarmsMutex);
     if (index < alarms.size()) {
         alarms[index] = alarm;
@@ -87,7 +87,7 @@ void AlarmsVector::loadFromFile() {
 
 
 void AlarmsVector::saveToFile(const std::string &filename) {
-    std::lock_guard<std::mutex> lock(alarmsMutex);
+    std::lock_guard lock(alarmsMutex);
     if (std::ofstream file(filename); file.is_open()) {
         try {
             nlohmann::json j = nlohmann::json::array();
