@@ -1,7 +1,9 @@
 #ifndef TM1637_H
 #define TM1637_H
 
-#include <stdbool.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -33,5 +35,9 @@ void tm1637SetBrightness(unsigned char b);
 // by passing a string such as "12:34" or "45 67"
 //
 void tm1637ShowDigits(const char *pString);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // TM1637_H
