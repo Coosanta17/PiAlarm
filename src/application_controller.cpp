@@ -77,11 +77,14 @@ namespace {
 
 namespace ApplicationController {
     void initialize() {
+        HardwareManager::initialize();
+
+        handleAlarmsAndDisplay();
+        tm1637SetBrightness(8);
+
         setupSignalHandlers();
 
         buttonHandler = std::make_unique<ButtonHandler>(HardwareManager::BUTTON_GPIO);
-
-        HardwareManager::initialize();
         setupButtonCallbacks();
     }
 
