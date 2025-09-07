@@ -1,5 +1,23 @@
 #include "util.h"
 #include "alarm.h"
+#include <ctime>
+
+std::chrono::system_clock::time_point getNextMinuteTime() {
+    const auto time_t_now = std::time(nullptr);
+    std::tm *tm_now = std::localtime(&time_t_now);
+
+    tm_now->tm_sec = 0;
+    tm_now->tm_min += 1;
+    return std::chrono::system_clock::from_time_t(std::mktime(tm_now));
+}
+
+std::string getCurrentTimeString() {
+    const std::time_t now = std::time(nullptr);
+    char buf[6];
+    std::strftime(buf, sizeof(buf), "%H:%M", std::localtime(&now));
+    return buf;
+}
+
 
 std::string toLowerString(const std::string_view str) {
     std::string result(str);

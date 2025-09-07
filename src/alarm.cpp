@@ -59,13 +59,13 @@ void Alarm::fromJson(const nlohmann::json &j) {
     }
 }
 
-Alarm Alarm::createFromJson(const nlohmann::json& j) {
+Alarm Alarm::createFromJson(const nlohmann::json &j) {
     try {
         Alarm alarm;
         alarm.setTime(j.at("hour").get<int>(), j.at("minute").get<int>());
         alarm.setEnabled(j.at("enabled").get<bool>());
 
-        for (const auto& d: j.at("days")) {
+        for (const auto &d: j.at("days")) {
             alarm.days.insert(d.get<DayOfWeek>());
         }
 
@@ -76,9 +76,8 @@ Alarm Alarm::createFromJson(const nlohmann::json& j) {
         }
 
         return alarm;
-    } catch (const nlohmann::json::exception& e) {
+    } catch (const nlohmann::json::exception &e) {
         std::cerr << "JSON parsing error in createFromJson: " << e.what() << std::endl;
         return Alarm();
     }
 }
-

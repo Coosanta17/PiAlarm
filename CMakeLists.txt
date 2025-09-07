@@ -20,6 +20,10 @@ add_executable(pi_alarm
         src/util.cpp
         src/api.cpp
         src/alarms_vector.cpp
+        src/application_controller.cpp
+        src/hardware_manager.cpp
+        src/button_handler.cpp
+        external/tm1637.c
 )
 
 target_link_libraries(pi_alarm PRIVATE

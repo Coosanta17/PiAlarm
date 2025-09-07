@@ -1,9 +1,9 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <string_view>
+#include <chrono>
 #include <string>
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 class Alarm;
 
@@ -21,4 +21,8 @@ void toJson(nlohmann::json &j, const std::vector<Alarm> &v);
 
 void fromJson(const nlohmann::json &j, std::vector<Alarm> &v);
 
-#endif //UTIL_H
+std::chrono::system_clock::time_point getNextMinuteTime();
+
+std::string getCurrentTimeString();
+
+#endif
