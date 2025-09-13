@@ -4,6 +4,15 @@
 #include "tm1637.h"
 
 static bool g_inited = false;
+
+//      A
+//     ---
+//  F |   | B
+//     -G-
+//  E |   | C
+//     ---
+//      D
+// XGFEDCBA
 const unsigned char cDigit2Seg[] = {
     0b00111111,
     0b00000110,
@@ -63,10 +72,37 @@ static void tm1637Stop(void) {
     gpioWrite(bDataPin, HIGH);
 } /* tm1637Stop() */
 
+
+static bool tm1637GetAck(void) {
+    bool bAck = false;
+
+    // Clock low, release data line so TM1637 can drive it
+    gpioWrite(bClockPin, LOW);
+    gpioSetMode(bDataPin, PI_INPUT);
+    gpioSetPullUpDown(bDataPin, PI_PUD_UP); // weak pull-up for defined high
+    gpioDelay(CLOCK_DELAY);
+
+    // Clock high - TM1637 should pull data low for ACK
+    gpioWrite(bClockPin, HIGH);
+    gpioDelay(CLOCK_DELAY);
+
+    // Read ACK (0 = success, 1 = NACK)
+    bAck = (gpioRead(bDataPin) == LOW);
+
+    // Complete ACK cycle
+    gpioWrite(bClockPin, LOW);
+    gpioDelay(CLOCK_DELAY);
+
+    // Reclaim data line
+    gpioSetMode(bDataPin, PI_OUTPUT);
+    gpioWrite(bDataPin, LOW);
+
+    return bAck;
+}
 //
 // Write an unsigned char to the controller
 //
-static void tm1637WriteByte(unsigned char b) {
+static bool tm1637WriteByte(unsigned char b) {
     for (int i = 0; i < 8; i++) {
         gpioWrite(bClockPin, LOW);
         gpioWrite(bDataPin, b & 1 ? HIGH : LOW);
@@ -75,18 +111,24 @@ static void tm1637WriteByte(unsigned char b) {
         gpioDelay(CLOCK_DELAY);
         b >>= 1;
     }
+    return tm1637GetAck();
 } /* tm1637Writeunsigned char() */
 
 //
 // Write a sequence of unsigned chars to the controller
 //
-static void tm1637Write(const unsigned char *pData, const unsigned char bLen) {
+static bool tm1637Write(const unsigned char *pData, const unsigned char bLen) {
     if (!g_inited) return;
     tm1637Start();
+    bool success = true;
     for (unsigned char i = 0; i < bLen; i++) {
-        tm1637WriteByte(pData[i]);
+        if (!tm1637WriteByte(pData[i])) {
+            success = false;
+            break;
+        }
     }
     tm1637Stop();
+    return success;
 } /* tm1637Write() */
 
 //
