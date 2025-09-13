@@ -4,7 +4,18 @@
 #include "tm1637.h"
 
 static bool g_inited = false;
-const unsigned char cDigit2Seg[] = {0x3f, 0x6, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07, 0x7f, 0x6f};
+const unsigned char cDigit2Seg[] = {
+    0b00111111,
+    0b00000110,
+    0b01011011,
+    0b01001111,
+    0b01100110,
+    0b01101101,
+    0b01111101,
+    0b00000111,
+    0b01111111,
+    0b01101111
+};
 static unsigned char bClockPin, bDataPin;
 #define CLOCK_DELAY 5
 #define LOW  0
@@ -107,14 +118,13 @@ void tm1637ShowDigits(const char *pString) {
 
     bTemp[j++] = 0xc0; // set display address to first digit command
     for (unsigned char i = 0; i < 5; i++) {
-        if (i == 2) // position of the colon
-        {
+        if (i == 2) {
             if (pString[i] == ':') // turn on correct bit
                 bTemp[2] |= 0x80; // second digit high bit controls colon LEDs
         } else {
             unsigned char b = 0;
             if (pString[i] >= '0' && pString[i] <= '9') {
-                b = cDigit2Seg[pString[i] & 0xf]; // segment data
+                b = cDigit2Seg[pString[i] & 0xf]; // Extract digit from char
             }
             bTemp[j++] = b;
         }
