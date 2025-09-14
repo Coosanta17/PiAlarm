@@ -122,12 +122,13 @@ namespace ApplicationController {
             buttonHandler->update();
             handleBuzzerState();
 
+            // If block runs once at the start of every minute
             if (std::chrono::system_clock::now() >= nextTriggerTime) {
                 handleAlarmsAndDisplay();
                 nextTriggerTime = getNextMinuteTime();
-                updateBrightness();
             }
 
+            updateBrightness();
             updateBuzzer();
             std::this_thread::sleep_for(LOOP_DELAY);
         }
