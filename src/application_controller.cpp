@@ -2,7 +2,6 @@
 #include <iostream>
 #include <csignal>
 #include <thread>
-#include <system_error>
 #include <atomic>
 #include <memory>
 
@@ -23,6 +22,9 @@ namespace {
     std::atomic running{true};
     bool lastBuzzerState{false};
 
+    auto brightnessState = BrightnessState::OFF;
+    std::chrono::system_clock::time_point brightnessStartTime;
+
     void signalHandler(const int signum) {
         std::cout << "\nInterrupt signal received. (" << signum << ")" << std::endl;
         running.store(false, std::memory_order_relaxed);
@@ -38,7 +40,32 @@ namespace {
         if (running.load(std::memory_order_relaxed)) {
             stopBuzzer();
         }
-        // TODO: else turn display on
+
+        tm1637SetBrightness(static_cast<unsigned char>(brightnessState));
+        brightnessState = BrightnessState::FULL;
+        brightnessStartTime = std::chrono::system_clock::now();
+    }
+
+    void updateBrightness() {
+        if (brightnessState == BrightnessState::FULL) {
+            const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::system_clock::now() - brightnessStartTime
+            ).count();
+            if (elapsed >= 10) {
+                brightnessState = BrightnessState::DIM;
+                tm1637SetBrightness(static_cast<unsigned char>(brightnessState));
+                brightnessStartTime = std::chrono::system_clock::now();
+            }
+        } else if (brightnessState == BrightnessState::DIM) {
+            const auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                std::chrono::system_clock::now() - brightnessStartTime
+            ).count();
+
+            if (elapsed >= 30) {
+                brightnessState = BrightnessState::OFF;
+                tm1637SetBrightness(static_cast<unsigned char>(brightnessState));
+            }
+        }
     }
 
     void onButtonLongPressed() {
@@ -80,7 +107,7 @@ namespace ApplicationController {
         HardwareManager::initialize();
 
         handleAlarmsAndDisplay();
-        tm1637SetBrightness(8);
+        tm1637SetBrightness(static_cast<unsigned char>(brightnessState));
 
         setupSignalHandlers();
 
@@ -98,6 +125,7 @@ namespace ApplicationController {
             if (std::chrono::system_clock::now() >= nextTriggerTime) {
                 handleAlarmsAndDisplay();
                 nextTriggerTime = getNextMinuteTime();
+                updateBrightness();
             }
 
             updateBuzzer();

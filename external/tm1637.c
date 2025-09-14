@@ -87,7 +87,7 @@ static bool tm1637GetAck(void) {
     gpioDelay(CLOCK_DELAY);
 
     // Read ACK (0 = success, 1 = NACK)
-    bAck = (gpioRead(bDataPin) == LOW);
+    bAck = gpioRead(bDataPin) == LOW;
 
     // Complete ACK cycle
     gpioWrite(bClockPin, LOW);
