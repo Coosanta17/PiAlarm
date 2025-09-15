@@ -41,8 +41,8 @@ namespace {
             stopBuzzer();
         }
 
-        tm1637SetBrightness(static_cast<unsigned char>(brightnessState));
         brightnessState = BrightnessState::FULL;
+        tm1637SetBrightness(static_cast<unsigned char>(brightnessState));
         brightnessStartTime = std::chrono::system_clock::now();
     }
 
